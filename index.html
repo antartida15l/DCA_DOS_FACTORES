@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DCA Dos Factores – Análisis Estadístico</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --sky:     #38bdf8;
+      --sky-deep:#0ea5e9;
+      --navy:    #0c2d5e;
+      --navy-mid:#1e4d8c;
+      --ice:     #e0f4fd;
+      --white:   #ffffff;
+      --slate:   #64748b;
+      --accent:  #f59e0b;
+      --soft-bg: #f0f9ff;
+      --card-shadow: 0 8px 32px rgba(14,165,233,0.13);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Sora', sans-serif;
+      background: var(--soft-bg);
+      color: var(--navy);
+      overflow-x: hidden;
+    }
+
+    /* ──────────────── HERO ──────────────── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 24px 80px;
+      overflow: hidden;
+      background: linear-gradient(160deg, #0c2d5e 0%, #1e4d8c 45%, #0ea5e9 100%);
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 80%, rgba(56,189,248,.25) 0%, transparent 55%),
+        radial-gradient(circle at 80% 15%, rgba(255,255,255,.07) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    /* floating circles decoration */
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      opacity: .12;
+      background: var(--sky);
+      animation: float 8s ease-in-out infinite;
+    }
+    .bubble:nth-child(1){ width:320px;height:320px;top:-80px;left:-120px;animation-delay:0s;}
+    .bubble:nth-child(2){ width:200px;height:200px;bottom:-60px;right:-60px;animation-delay:2s;}
+    .bubble:nth-child(3){ width:120px;height:120px;top:40%;left:5%;animation-delay:4s;}
+    .bubble:nth-child(4){ width:80px;height:80px;top:20%;right:12%;animation-delay:1s;}
+
+    @keyframes float {
+      0%,100%{transform:translateY(0);}
+      50%{transform:translateY(-20px);}
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,.15);
+      color: var(--sky);
+      border: 1px solid rgba(56,189,248,.4);
+      border-radius: 999px;
+      padding: 6px 20px;
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      backdrop-filter: blur(6px);
+      animation: fadeDown .6s ease both;
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 6vw, 4.4rem);
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.1;
+      max-width: 780px;
+      animation: fadeDown .7s .1s ease both;
+    }
+
+    .hero-title span {
+      color: var(--sky);
+    }
+
+    .hero-subtitle {
+      font-family: 'Lora', serif;
+      font-style: italic;
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: rgba(255,255,255,.75);
+      margin-top: 18px;
+      max-width: 600px;
+      animation: fadeDown .7s .2s ease both;
+    }
+
+    .hero-divider {
+      width: 64px; height: 4px;
+      border-radius: 2px;
+      background: var(--sky);
+      margin: 32px auto;
+      animation: fadeDown .7s .3s ease both;
+    }
+
+    /* Stats strip */
+    .stats-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 40px;
+      animation: fadeUp .8s .5s ease both;
+    }
+
+    .stat-pill {
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      padding: 14px 28px;
+      text-align: center;
+      min-width: 140px;
+    }
+
+    .stat-pill .val {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--sky);
+      display: block;
+    }
+
+    .stat-pill .lbl {
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.65);
+      margin-top: 2px;
+    }
+
+    .scroll-cue {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: rgba(255,255,255,.5);
+      font-size: .7rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      animation: fadeUp 1s 1s ease both;
+    }
+
+    .scroll-cue::after {
+      content:'';
+      display:block;
+      width:2px; height:36px;
+      background: linear-gradient(to bottom, rgba(255,255,255,.5), transparent);
+      border-radius:1px;
+      animation: scroll-line 1.5s infinite;
+    }
+
+    @keyframes scroll-line{0%{opacity:1;transform:scaleY(1)translateY(0)}100%{opacity:0;transform:scaleY(.5)translateY(10px)}}
+
+    /* ──────────────── SECTIONS ──────────────── */
+    section { padding: 80px 24px; max-width: 1100px; margin: 0 auto; }
+
+    .section-label {
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--sky-deep);
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--navy);
+      margin-bottom: 14px;
+    }
+
+    .section-desc {
+      font-family: 'Lora', serif;
+      font-size: 1.05rem;
+      color: var(--slate);
+      line-height: 1.75;
+      max-width: 700px;
+    }
+
+    /* ──────────────── WHAT IS DCA ──────────────── */
+    .concept-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .concept-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 32px 28px;
+      box-shadow: var(--card-shadow);
+      border-top: 4px solid var(--sky);
+      transition: transform .25s, box-shadow .25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .concept-card::before {
+      content:'';
+      position:absolute;
+      top:-40px;right:-40px;
+      width:120px;height:120px;
+      border-radius:50%;
+      background: var(--ice);
+      opacity:.6;
+    }
+
+    .concept-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 40px rgba(14,165,233,.2);
+    }
+
+    .concept-card .icon {
+      font-size: 2.2rem;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .concept-card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 10px;
+    }
+
+    .concept-card p {
+      font-size: .9rem;
+      color: var(--slate);
+      line-height: 1.65;
+    }
+
+    /* ──────────────── DATA TABLE ──────────────── */
+    .table-section {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 48px;
+      box-shadow: var(--card-shadow);
+      margin-top: 48px;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 24px;
+      font-size: .88rem;
+    }
+
+    .data-table th {
+      background: var(--navy);
+      color: var(--white);
+      padding: 14px 18px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      font-size: .78rem;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .data-table th:first-child { border-radius: 12px 0 0 0; }
+    .data-table th:last-child  { border-radius: 0 12px 0 0; }
+
+    .data-table td {
+      padding: 12px 18px;
+      text-align: center;
+      border-bottom: 1px solid var(--ice);
+      color: var(--navy);
+      font-weight: 500;
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:nth-child(even) td { background: var(--soft-bg); }
+
+    .data-table .highlight-row td {
+      background: linear-gradient(90deg, #e0f4fd, #f0f9ff);
+      font-weight: 700;
+      color: var(--navy-mid);
+    }
+
+    /* ──────────────── ANOVA INTERPRETATION ──────────────── */
+    .anova-section { margin-top: 0; }
+
+    .anova-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .anova-card {
+      border-radius: 20px;
+      padding: 30px 26px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .25s;
+    }
+
+    .anova-card:hover { transform: translateY(-4px); }
+
+    .anova-card.factor-a {
+      background: linear-gradient(135deg, #0c2d5e 0%, #1e4d8c 100%);
+      color: var(--white);
+    }
+
+    .anova-card.factor-b {
+      background: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%);
+      color: var(--white);
+    }
+
+    .anova-card.interaction {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      color: #78350f;
+    }
+
+    .anova-card.error-card {
+      background: var(--white);
+      border: 2px solid var(--ice);
+      color: var(--navy);
+      box-shadow: var(--card-shadow);
+    }
+
+    .anova-card .card-label {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      opacity: .75;
+      margin-bottom: 8px;
+    }
+
+    .anova-card h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    .anova-card .f-value {
+      font-size: 2.4rem;
+      font-weight: 800;
+      line-height: 1;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .anova-card .f-label {
+      font-size: .78rem;
+      font-weight: 600;
+      opacity: .8;
+      margin-bottom: 16px;
+    }
+
+    .anova-card p {
+      font-size: .88rem;
+      line-height: 1.65;
+      opacity: .9;
+    }
+
+    .verdict {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,.25);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: .75rem;
+      font-weight: 700;
+      margin-top: 14px;
+    }
+
+    .verdict.sig { background: rgba(255,255,255,.25); }
+    .verdict.no-sig { background: rgba(239,68,68,.15); color: #dc2626; }
+
+    /* ──────────────── INTERPRETATION PLAIN LANGUAGE ──────────────── */
+    .plain-box {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      border-radius: 24px;
+      padding: 48px;
+      margin-top: 40px;
+      color: var(--white);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .plain-box::before {
+      content:'"';
+      position:absolute;
+      top:-20px; left:30px;
+      font-size:14rem;
+      font-family:'Lora',serif;
+      color:rgba(255,255,255,.05);
+      line-height:1;
+      pointer-events:none;
+    }
+
+    .plain-box h3 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--sky);
+    }
+
+    .plain-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .plain-list li {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      font-size: .95rem;
+      line-height: 1.7;
+      color: rgba(255,255,255,.88);
+    }
+
+    .plain-list li .dot {
+      flex-shrink: 0;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--sky);
+      color: var(--navy);
+      font-weight: 800;
+      font-size: .8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    /* ──────────────── SUMS TABLE ──────────────── */
+    .sums-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 36px;
+    }
+
+    .sum-tile {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 22px 20px;
+      box-shadow: var(--card-shadow);
+      border-left: 4px solid var(--sky-deep);
+    }
+
+    .sum-tile .abbr {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--sky-deep);
+      margin-bottom: 4px;
+    }
+
+    .sum-tile .name {
+      font-size: .8rem;
+      color: var(--slate);
+      margin-bottom: 10px;
+    }
+
+    .sum-tile .value {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    /* ──────────────── TEAM CARDS ──────────────── */
+    .team-section {
+      text-align: center;
+    }
+
+    .team-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+      justify-content: center;
+      margin-top: 50px;
+    }
+
+    .team-card {
+      background: var(--white);
+      border-radius: 28px;
+      padding: 40px 36px;
+      width: 320px;
+      box-shadow: 0 12px 40px rgba(14,165,233,.15);
+      transition: transform .3s, box-shadow .3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .team-card::after {
+      content:'';
+      position:absolute;
+      top:0; left:0; right:0;
+      height:6px;
+      background: linear-gradient(90deg, var(--sky-deep), var(--sky));
+      border-radius:28px 28px 0 0;
+    }
+
+    .team-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 24px 60px rgba(14,165,233,.25);
+    }
+
+    .photo-frame {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      margin: 0 auto 22px;
+      position: relative;
+      border: 4px solid var(--sky);
+      box-shadow: 0 0 0 6px var(--ice);
+      overflow: hidden;
+      background: var(--ice);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .photo-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--ice) 0%, #bae6fd 100%);
+      color: var(--navy-mid);
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      gap: 6px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .photo-placeholder:hover { background: linear-gradient(135deg, #bae6fd 0%, var(--sky) 100%); }
+
+    .photo-placeholder .cam { font-size: 2rem; }
+
+    /* hidden file input */
+    .photo-input { display: none; }
+
+    .team-card h3 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .team-card .role {
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--sky-deep);
+      margin-bottom: 16px;
+    }
+
+    .team-card .description {
+      font-size: .88rem;
+      color: var(--slate);
+      line-height: 1.65;
+    }
+
+    /* ──────────────── FOOTER ──────────────── */
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      color: var(--white);
+      font-size: .8rem;
+      border-top: 1px solid var(--ice);
+      margin-top: 40px;
+    }
+
+    footer span { color: var(--white); font-weight: 700; }
+
+    /* ──────────────── ANIMATIONS ──────────────── */
+    @keyframes fadeDown {
+      from { opacity:0; transform:translateY(-20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ──────────────── RESPONSIVE ──────────────── */
+    /* ── Hero team ── */
+    .hero-team {
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 52px;
+      animation: fadeUp .8s .65s ease both;
+    }
+
+    .hero-member {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hero-photo {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      border: 3px solid rgba(56,189,248,.7);
+      box-shadow: 0 0 0 5px rgba(56,189,248,.12);
+      overflow: hidden;
+      cursor: pointer;
+      background: rgba(255,255,255,.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .2s, box-shadow .2s;
+      flex-shrink: 0;
+    }
+
+    .hero-photo:hover {
+      border-color: var(--sky);
+      box-shadow: 0 0 0 6px rgba(56,189,248,.28);
+    }
+
+    .hero-photo-ph { font-size: 2rem; opacity: .65; }
+
+    .hero-member-name {
+      font-size: .82rem;
+      font-weight: 700;
+      color: rgba(255,255,255,.88);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* ── Interpretaciones reorganizadas ── */
+    .interp-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 32px;
+    }
+
+    .interp-block {
+      border-radius: 18px;
+      padding: 26px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .interp-block.navy  { background: linear-gradient(135deg,#0c2d5e,#1e4d8c); color:#fff; }
+    .interp-block.sky   { background: linear-gradient(135deg,#0ea5e9,#38bdf8); color:#fff; }
+    .interp-block.warn  { background: #fef9ec; border: 1.5px solid #f59e0b; color: var(--navy); }
+    .interp-block.light { background: var(--white); border: 1.5px solid var(--ice); color: var(--navy); box-shadow: var(--card-shadow); }
+
+    .interp-icon { font-size: 1.6rem; }
+
+    .interp-block h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .interp-block p {
+      font-size: .87rem;
+      line-height: 1.65;
+      opacity: .9;
+      margin: 0;
+    }
+
+    .interp-tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 14px;
+      font-size: .72rem;
+      font-weight: 700;
+      margin-top: 4px;
+      width: fit-content;
+    }
+
+    .interp-tag.ok       { background: rgba(255,255,255,.2); color: inherit; }
+    .interp-block.light .interp-tag.ok,
+    .interp-block.warn  .interp-tag.ok { background: var(--ice); color: var(--navy-mid); }
+    .interp-tag.warn-tag { background: #fde68a; color: #78350f; }
+
+    .interp-conclusion {
+      margin-top: 20px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      border-radius: 18px;
+      padding: 26px 28px;
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      color: var(--white);
+    }
+
+    .concl-num {
+      font-size: 2rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .interp-conclusion strong {
+      display: block;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--sky);
+    }
+
+    .interp-conclusion p {
+      font-size: .88rem;
+      line-height: 1.65;
+      opacity: .88;
+      margin: 0;
+    }
+
+    @media(max-width: 640px){
+      .table-section { padding: 28px 16px; }
+      .plain-box { padding: 32px 22px; }
+      section { padding: 56px 16px; }
+      .interp-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<div class="hero">
+  <div class="bubble"></div>
+  <div class="bubble"></div>
+  <div class="bubble"></div>
+  <div class="bubble"></div>
+
+  <div class="badge">Estadística · Diseño de Experimentos</div>
+  <h1 class="hero-title">Diseño Completamente<br /><span>Aleatorio con Dos Factores</span></h1>
+  <p class="hero-subtitle">Análisis ANOVA bifactorial aplicado a datos experimentales con factores A y B</p>
+  <div class="hero-divider"></div>
+
+  <div class="stats-strip">
+    <div class="stat-pill">
+      <span class="val">16</span>
+      <span class="lbl">Observaciones</span>
+    </div>
+    <div class="stat-pill">
+      <span class="val">2</span>
+      <span class="lbl">Factores</span>
+    </div>
+    <div class="stat-pill">
+      <span class="val">4</span>
+      <span class="lbl">Tratamientos</span>
+    </div>
+    <div class="stat-pill">
+      <span class="val">2956</span>
+      <span class="lbl">Total General</span>
+    </div>
+    <div class="stat-pill">
+      <span class="val">4</span>
+      <span class="lbl">Réplicas por celda</span>
+    </div>
+  </div>
+
+  <!-- Integrantes minimalistas en el hero -->
+  <div class="hero-team">
+      <div class="hero-member">
+        <div class="hero-photo" title="Foto">
+          <img id="img1" 
+              src="img/joaquin.jpeg" 
+              alt="Joaquín Alejandro Reynoso Quilca"
+              style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+        </div>
+
+        <p class="hero-member-name">
+          Joaquín Alejandro<br/>Reynoso Quilca
+        </p>
+      </div>
+    <div class="hero-member">
+        <div class="hero-photo" title="Foto">
+          <img id="img1" 
+              src="img/andree.jpeg" 
+              alt="Andre'e Alessandro Chili Lima"
+              style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+        </div>
+
+        <p class="hero-member-name">
+          Joaquín Alejandro<br/>Reynoso Quilca
+        </p>
+      </div>
+
+  <div class="scroll-cue">Desplázate</div>
+</div>
+
+<!-- ═══════════════════ ¿QUÉ ES? ═══════════════════ -->
+<section class="reveal">
+  <div class="section-label">Conceptos base</div>
+  <h2 class="section-title">¿Qué es el DCA de Dos Factores?</h2>
+  <p class="section-desc">
+    Imagina que quieres saber si <strong>dos cosas diferentes</strong> afectan un resultado —y si encima se combinan entre sí. El DCA bifactorial es exactamente eso: un experimento donde se estudian dos "causas" al mismo tiempo y se analiza cada una por separado y juntas.
+  </p>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <span class="icon">🎯</span>
+      <h3>Factor A — Tipo de Almacenamiento</h3>
+      <p>Es una de las dos variables que controlamos. En este experimento tiene dos niveles: <strong>A1-C (Control)</strong> y <strong>A2-M (Modificado)</strong>. Nos dice si el método de almacenamiento influye en el resultado medido.</p>
+    </div>
+    <div class="concept-card">
+      <span class="icon">📦</span>
+      <h3>Factor B — Tipo de Envase</h3>
+      <p>La segunda variable. También tiene dos niveles: <strong>B1-M</strong> y <strong>B2-S</strong>. Nos dice si el tipo de envase importa para el resultado final.</p>
+    </div>
+    <div class="concept-card">
+      <span class="icon">🔀</span>
+      <h3>Interacción A×B</h3>
+      <p>La parte más interesante: ¿el efecto del almacenamiento <em>cambia</em> dependiendo del envase que se use? Si hay interacción, los dos factores no actúan de forma independiente.</p>
+    </div>
+    <div class="concept-card">
+      <span class="icon">🎲</span>
+      <h3>Completamente Aleatorio</h3>
+      <p>Las unidades experimentales se asignan al azar a cada tratamiento. Esto elimina sesgos y asegura que los resultados sean confiables y comparables.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ DATOS ORIGINALES ═══════════════════ -->
+<section class="reveal">
+  <div class="section-label">Datos del experimento</div>
+  <h2 class="section-title">Tabla de Datos Originales</h2>
+  <p class="section-desc">Cada celda contiene 4 mediciones (réplicas). Los valores representan las observaciones registradas para cada combinación de factores.</p>
+
+  <div class="table-section">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Factor A</th>
+          <th>B1-M</th>
+          <th>B2-S</th>
+          <th>Total A</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>A1-C</strong></td>
+          <td>142 · 138 · 150 · 145</td>
+          <td>198 · 205 · 192 · 210</td>
+          <td><strong>1380</strong></td>
+        </tr>
+        <tr>
+          <td><strong>A2-M</strong></td>
+          <td>165 · 171 · 158 · 168</td>
+          <td>228 · 235 · 221 · 230</td>
+          <td><strong>1576</strong></td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Total B</strong></td>
+          <td><strong>1237</strong></td>
+          <td><strong>1719</strong></td>
+          <td><strong>2956</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top:18px; font-size:.82rem; color:var(--slate); font-style:italic;">
+      💡 Dato clave: el Factor B (tipo de envase) muestra diferencias considerables — B2-S acumula 1719 vs 1237 de B1-M, lo que ya nos adelanta que el envase tiene gran impacto.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════ SUMAS DE CUADRADOS ═══════════════════ -->
+<section class="reveal">
+  <div class="section-label">Cálculos intermedios</div>
+  <h2 class="section-title">Sumas de Cuadrados — ¿Qué significan?</h2>
+  <p class="section-desc">
+    Para saber si algo "importa" estadísticamente, medimos cuánto varía. Cada "suma de cuadrados" mide la variación que proviene de cada fuente. Cuanto mayor sea, más influye esa fuente en los resultados.
+  </p>
+
+  <div class="sums-grid">
+    <div class="sum-tile">
+      <div class="abbr">C</div>
+      <div class="name">Factor de Corrección</div>
+      <div class="value">546,121</div>
+    </div>
+    <div class="sum-tile">
+      <div class="abbr">SCT</div>
+      <div class="name">Suma de Cuadrados Total</div>
+      <div class="value">17,409</div>
+    </div>
+    <div class="sum-tile">
+      <div class="abbr">SCA</div>
+      <div class="name">Suma de Cuadrados Factor A</div>
+      <div class="value">548,522</div>
+    </div>
+    <div class="sum-tile">
+      <div class="abbr">SCB</div>
+      <div class="name">Suma de Cuadrados Factor B</div>
+      <div class="value">560,641.25</div>
+    </div>
+    <div class="sum-tile">
+      <div class="abbr">SCI</div>
+      <div class="name">Suma de Cuadrados Interacción</div>
+      <div class="value" style="color:#dc2626;">−1,092,211.75</div>
+    </div>
+    <div class="sum-tile">
+      <div class="abbr">SCE</div>
+      <div class="name">Suma de Cuadrados del Error</div>
+      <div class="value">457.5</div>
+    </div>
+    <div class="sum-tile">
+      <div class="abbr">SCC</div>
+      <div class="name">Suma de Cuadrados de Celdas</div>
+      <div class="value">16,951.5</div>
+    </div>
+    <div class="sum-tile">
+      <div class="abbr">n</div>
+      <div class="name">Total de observaciones</div>
+      <div class="value">15</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ TABLA ANOVA ═══════════════════ -->
+<section class="reveal anova-section">
+  <div class="section-label">Tabla ANOVA</div>
+  <h2 class="section-title">Resultados del Análisis de Varianza</h2>
+  <p class="section-desc">
+    La tabla ANOVA resume todo el análisis. La columna clave es <strong>F calculado</strong> — si es mayor que el F crítico, ese factor importa.
+  </p>
+
+  <div class="table-section" style="margin-top:32px;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Fuente de Variación</th>
+          <th>SC</th>
+          <th>GL</th>
+          <th>MC</th>
+          <th>F calculado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Factor A</strong></td>
+          <td>548,522</td>
+          <td>1</td>
+          <td>548,522</td>
+          <td style="color:var(--navy-mid); font-weight:700;">14,387.46</td>
+        </tr>
+        <tr>
+          <td><strong>Factor B</strong></td>
+          <td>560,641.25</td>
+          <td>1</td>
+          <td>560,641.25</td>
+          <td style="color:var(--navy-mid); font-weight:700;">14,705.34</td>
+        </tr>
+        <tr>
+          <td><strong>Interacción A×B</strong></td>
+          <td>−1,092,211.8</td>
+          <td>1</td>
+          <td>−1,092,211.8</td>
+          <td style="color:#dc2626; font-weight:700;">−28,648.18</td>
+        </tr>
+        <tr>
+          <td><strong>Error</strong></td>
+          <td>457.5</td>
+          <td>12</td>
+          <td>38.125</td>
+          <td>—</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Total</strong></td>
+          <td><strong>17,409</strong></td>
+          <td><strong>15</strong></td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="anova-grid" style="margin-top:32px;">
+    <div class="anova-card factor-a">
+      <div class="card-label">Factor A · Tipo de Almacenamiento</div>
+      <h3>A1-C vs A2-M</h3>
+      <span class="f-value">14,387</span>
+      <div class="f-label">F calculado</div>
+      <p>El F es enormemente alto — esto significa que el <strong>método de almacenamiento SÍ afecta significativamente</strong> el resultado. No es una coincidencia: es un efecto real y medible.</p>
+      <div class="verdict sig"> Significativo</div>
+    </div>
+
+    <div class="anova-card factor-b">
+      <div class="card-label">Factor B · Tipo de Envase</div>
+      <h3>B1-M vs B2-S</h3>
+      <span class="f-value">14,705</span>
+      <div class="f-label">F calculado</div>
+      <p>El envase también tiene un efecto enorme. Los datos muestran que <strong>el tipo de envase SÍ influye</strong> considerablemente — de hecho, su efecto es aún mayor que el del factor A.</p>
+      <div class="verdict sig">Significativo</div>
+    </div>
+
+    <div class="anova-card interaction">
+      <div class="card-label">Interacción A×B</div>
+      <h3>¿Se combinan?</h3>
+      <span class="f-value" style="color:#92400e;">−28,648</span>
+      <div class="f-label">F calculado (negativo)</div>
+      <p>El F negativo indica un resultado matemáticamente anómalo en la interacción — posiblemente por la magnitud de las SC individuales. <strong>Este resultado debe interpretarse con cautela.</strong></p>
+      <div class="verdict no-sig"> OJITOOOOOOOO </div>
+    </div>
+
+    <div class="anova-card error-card">
+      <div class="card-label">Error Experimental</div>
+      <h3>Variación natural</h3>
+      <span class="f-value" style="color:var(--sky-deep);">38.13</span>
+      <div class="f-label">Cuadrado Medio del Error</div>
+      <p>El error experimental es bajo (38.13), lo que indica que el experimento fue <strong>controlado y confiable</strong>. Poca variación "de ruido".</p>
+      <div class="verdict" style="background:var(--ice); color:var(--navy);"> Bajo y aceptable</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ INTERPRETACIÓN ORGANIZADA ═══════════════════ -->
+<section class="reveal">
+  <div class="section-label">Conclusiones</div>
+  <h2 class="section-title">¿Qué nos dicen los resultados?</h2>
+
+  <!-- Bloque 1: factores individuales lado a lado -->
+  <div class="interp-row">
+    <div class="interp-block navy">
+      <div class="interp-icon">🏷️</div>
+      <h4>Factor A — Almacenamiento</h4>
+      <p>El método A2-M (modificado) obtuvo valores más altos que A1-C (control). No es casualidad: la diferencia es estadísticamente muy grande y real.</p>
+      <span class="interp-tag ok"> Sí influye</span>
+    </div>
+    <div class="interp-block sky">
+      <div class="interp-icon">📦</div>
+      <h4>Factor B — Envase</h4>
+      <p>El envase B2-S registró valores notablemente superiores al B1-M. De los dos factores, el envase tiene incluso mayor impacto que el almacenamiento.</p>
+      <span class="interp-tag ok"> Sí influye</span>
+    </div>
+  </div>
+
+  <!-- Bloque 2: interacción + error lado a lado -->
+  <div class="interp-row" style="margin-top:20px;">
+    <div class="interp-block warn">
+      <div class="interp-icon">🔀</div>
+      <h4>Interacción A×B</h4>
+      <p>El F negativo es una señal matemática anómala — puede ocurrir cuando las SC individuales son muy grandes. Este valor conviene revisarlo.</p>
+      <span class="interp-tag warn-tag">OJITOOOOOOOO</span>
+    </div>
+    <div class="interp-block light">
+      <div class="interp-icon">📊</div>
+      <h4>Error Experimental</h4>
+      <p>El error fue bajo (38.13). Eso significa que el experimento fue preciso y controlado — las diferencias que se ven son reales, no ruido.</p>
+      <span class="interp-tag ok">Bajo y aceptable</span>
+    </div>
+  </div>
+
+  <!-- Bloque 3: conclusión final destacada -->
+  <div class="interp-conclusion">
+    <span class="concl-num"></span>
+    <div>
+      <strong>Conclusión práctica</strong>
+      <p>Si se quiere maximizar el resultado, la mejor combinación es <em>almacenamiento A2-M + envase B2-S</em>. Esa celda produjo los valores más altos del experimento (entre 221 y 235).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer>
+  <p>Diseño Completamente Aleatorio · <span>Dos Factores</span> · Análisis ANOVA Bifactorial</p>
+  <p style="margin-top:6px;">Joaquín Reynoso &amp; André Chili · Diseños Experimentales</p>
+</footer>
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
+<script>
+  // Photo upload
+  function loadPhoto(event, imgId, placeholderId) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = document.getElementById(imgId);
+      const ph  = document.getElementById(placeholderId);
+      img.src = e.target.result;
+      img.style.display = 'block';
+      ph.style.display  = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
